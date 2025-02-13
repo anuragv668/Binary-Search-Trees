@@ -1,4 +1,4 @@
-class Node {
+export class Node {
   constructor(data = null, leftNode = null, rightNode = null) {
     this.data = data;
     this.leftNode = leftNode;
@@ -6,14 +6,14 @@ class Node {
   }
 }
 
-class Tree {
+export default class Tree {
   constructor(array) {
-    this.root = buildTree(array);
+    this.root = this.buildTree(array);
   }
 
   buildTree = (array) => {
-    let arr = removeDuplicates(array.sort((a, b) => a - b));
-    return buildTreeRecur(arr, 0, arr.length - 1);
+    let arr = this.removeDuplicates(array.sort((a, b) => a - b));
+    return this.buildTreeRecur(arr, 0, arr.length - 1);
   }
 
   removeDuplicates = (array) => {
@@ -35,23 +35,70 @@ class Tree {
 
     let root = new Node(array[mid]);
 
-    root.left = buildTreeRecur(array, start, mid -1);
+    root.leftNode = this.buildTreeRecur(array, start, mid -1);
 
-    root.right = buildTreeRecur(array, mid + 1, end);
+    root.rightNode = this.buildTreeRecur(array, mid + 1, end);
+
+    return root;
+  }
+
+  insert(value, root = this.root) {
+    if (root == null) {
+      return new Node(value);
+    }
+    if (root.data === value) {
+      return root;
+    } 
+    if (root.data > value) {
+        root.leftNode = this.insert(value, root.leftNode);
+    } else if (root.data < value) {
+        root.rightNode = this.insert(value, root.rightNode);
+    }
+    return root;
+  }
+  getSuccessor() {
+    let curr = this.root.rightNode;
+    while (curr !== null && curr.leftNode !== null) {
+        curr = curr.leftNode;
+    }
+    return curr;
+  }  
+  delete(value, root = this.root) {
+    if (root == null) {
+      return root;
+    }
+
+    if (root.data > value) {
+      root.leftNode = this.delete(value, root.leftNode);
+    } else if (root.data < value) {
+      root.rightNode = this.delete(value, root.rightNode);
+    } else {
+      if (root.leftNode === null) {
+        return root.rightNode;
+      } 
+
+      if (root.rightNode === null) {
+        return root.leftNode;
+      }
+
+      let succ = this.getSuccessor();
+      root.data = succ.data;
+      root.rightNode = this.delete(succ.data, root.rightNode);
+    }
 
     return root;
   }
 }
 
-const prettyPrint = (node, prefix = "", isLeft = true) => {
+export const prettyPrint = (node, prefix = "", isLeft = true) => {
   if (node === null) {
     return;
   }
-  if (node.right !== null) {
-    prettyPrint(node.right, `${prefix}${isLeft ? "│   " : "    "}`, false);
+  if (node.rightNode !== null) {
+    prettyPrint(node.rightNode, `${prefix}${isLeft ? "│   " : "    "}`, false);
   }
   console.log(`${prefix}${isLeft ? "└── " : "┌── "}${node.data}`);
-  if (node.left !== null) {
-    prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
+  if (node.leftNode !== null) {
+    prettyPrint(node.leftNode, `${prefix}${isLeft ? "    " : "│   "}`, true);
   }
 };
